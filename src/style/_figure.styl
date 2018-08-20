@@ -1,0 +1,27 @@
+.float-left
+  $left = $page-margin-inner - $page-margin-outer
+  position: relative
+  float: left
+  margin-left: $left
+  margin-right: $image-margin
+  margin-top: ($image-margin / 2)
+  margin-bottom: ($image-margin / 2)
+  z-index: 100
+
+.float-right
+  $right = $page-margin-inner - $page-margin-outer
+  position: relative
+  float: right
+  margin-left: $image-margin
+  margin-right: $right
+  margin-top: ($image-margin / 2)
+  margin-bottom: ($image-margin / 2)
+  z-index: 100
+
+figure
+  text-align: center
+  img
+    margin: ($image-margin / 2) 0
+  figcaption
+    font-weight: 500
+    color: #666666
