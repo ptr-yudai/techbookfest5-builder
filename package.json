@@ -1,0 +1,29 @@
+{
+  "name": "techbookfest5-builder",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "watch": "gulp watch",
+    "save": "savepdf -s A5 dest/index.html",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "devDependencies": {
+    "babel-core": "^6.10.4",
+    "babel-preset-es2015": "^6.9.0",
+    "browser-sync": "^2.13.0",
+    "gulp": "^3.9.1",
+    "gulp-load-plugins": "^1.2.4",
+    "gulp-plumber": "^1.1.0",
+    "gulp-pug": "^3.0.3",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-stylus": "^2.5.0",
+    "jstransformer-marked": "^1.0.1",
+    "node-prismjs": "^0.1.0",
+    "normalize.css": "^4.2.0",
+    "prismjs": "git+https://github.com/PrismJS/prism.git#gh-pages",
+    "pug": "^2.0.0-beta3",
+    "viola-savepdf": "^1.2.5"
+  }
+}
