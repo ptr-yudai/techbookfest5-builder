@@ -1,0 +1,15 @@
+mixin header(category, title, authors)
+  header.header
+    .rectangle
+      .left
+      .right
+    .top-background
+
+    .chapter= category
+    h1= title
+    .authors-wrapper
+      ul.authors
+        each author in authors
+          li.author
+            img(src="assets/icons/" + author + ".png")
+            .name= author

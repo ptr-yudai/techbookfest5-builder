@@ -1,0 +1,15 @@
+include pug/_common.pug
+
+doctype html
+html(lang="ja")
+  head
+    meta(charset="utf-8")
+    meta(name='viewport' content='width=device-width,initial-scale=1')
+    link(rel="stylesheet", href="./main.css")
+    link(rel="icon" type="image/x-icon" href="./images/favicon.ico")
+    script(type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_SVG")
+    title TOGETHER -2- 数学と電気の鍋
+
+  body
+    include pug/sat_solver/index.pug
+    include pug/large_numbers/index.pug
