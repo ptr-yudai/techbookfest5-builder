@@ -49,7 +49,7 @@ const plumberOpt = {
 gulp.task('default', ['pug', 'assets', 'stylus']);
 
 gulp.task('pug', () =>
-  gulp.src('src/index.pug')
+  gulp.src(['src/*.pug', '!src/_*.pug'])
     .pipe($.plumber(plumberOpt))
     .pipe($.pug({
       pug: pug,
