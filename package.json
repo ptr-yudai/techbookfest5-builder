@@ -6,6 +6,7 @@
   "private": true,
   "scripts": {
     "watch": "gulp watch",
+    "save": "savepdf -s A5 dest/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {
@@ -22,6 +23,7 @@
     "node-prismjs": "^0.1.0",
     "normalize.css": "^4.2.0",
     "prismjs": "git+https://github.com/PrismJS/prism.git#gh-pages",
-    "pug": "^2.0.0-beta3"
+    "pug": "^2.0.0-beta3",
+    "viola-savepdf": "^1.2.5"
   }
 }
