@@ -1,0 +1,35 @@
+// h1: chapter
+// h2: section
+// h3: subsection
+
+body
+  counter-reset: chapter 1
+
+.chapter
+  &::after
+    content: " 0" counter(chapter)
+
+h1
+  counter-reset: section
+  counter-increment: chapter
+
+h2
+  counter-reset: subsection
+  counter-increment: section
+
+  &::before
+    content: counter(section) "."
+    font-size: 15pt
+    font-weight: 700
+    line-height: 0
+    margin-right: 5px
+
+h3
+  counter-increment: subsection
+
+  &::before
+    content: counter(section) "." counter(subsection)
+    font-size: 12pt
+    font-weight: 700
+    line-height: 0
+    margin-right: 5px
