@@ -1,0 +1,201 @@
+h2#sample-headline 見出し
+p
+  | 3 段階の見出しを用意しています。
+  code h2
+  | が section、
+  code h3
+  | が subsection、
+  code h4
+  | が subsubsectionです。
+p 見出し番号の後にはピリオドが付きます。具体的なスタイルは次のとおりです。
+h3 これは
+  code h3
+h4 これは
+  code h4
+h4 subsubsection 番号がインクリメントされます
+h3 subsection 番号がインクリメントされます
+
+h2#sample-toc 目次
+p 半自動で目次が作れます。自動でできるのはページ数を求めることだけなので半自動です。
+p
+  | 目次を作るには、まず
+  code h2
+  code h3
+  | といった見出しに id を振ります。id には prefix としてタイトルを付けておくと他の人と衝突しなくて良いと思います。
+  :code(lang="jade")
+    h2#sample-hoge ほげほげ
+    ...
+    h3#sample-fuga ふがふが
+    ...
+  | 次に目次を出力します。先ほどつけた id とそれに対応する見出し名を書きます。
+  :code(lang="jade")
+    nav.toc
+      ol
+        li: a(href="#sample-hoge") ほげほげ
+        li: a(href="#sample-fuga") ふがふが
+
+h2#sample-text テキスト
+h3#sample-text-paragraph 段落
+p 文章のまとまりは段落で表現します。先頭は字下げされます。
+p.right 右寄せにしたい場合も大丈夫です。
+:code(lang="jade")
+  p 文章のまとまりは段落で表現します。先頭は字下げされます。
+  p.right 右寄せにしたい場合も大丈夫です。
+
+h3#sample-text-strong 強調
+p
+  | 文章中の単語を
+  strong 目立たせる
+  | 用途に使います。
+  :code(lang="jade")
+    strong 目立たせる
+
+h3#sample-text-hyperlink ハイパーリンク
+p
+  | PDF で出力するので
+  a(href="https://ja.wikipedia.org/wiki/%E3%83%8F%E3%82%A4%E3%83%91%E3%83%BC%E3%83%AA%E3%83%B3%E3%82%AF") ハイパーリンク
+  | を挿入できます。
+  | 自己紹介の Twitter ID や参考サイトの URL 等に使えます。
+  :code(lang="jade")
+    a(href="https://ja.wikipedia.org/wiki/...") ハイパーリンク
+
+h3#sample-text-code ソースコード
+p
+  | インラインとブロックの 2 種類があります。インラインは
+  code genki_ippai(str)
+  | のようなスタイルになります。
+  :code(lang="jade")
+    code genki_ippai(str)
+  | ブロックはこのようなスタイルになります。
+  :code(lang="ruby")
+    def genki_ippai(str)
+      puts "#{str}!!!"
+    end
+  | 次のように書きます。ハイライトには
+  a(href="https://prismjs.com/test.html") Prism.js
+  | を採用しました。
+  code lang
+  | オプションに文字列で言語名を入れてください、言語が対応していなければオプションを付けなくても構いません。
+  :code(lang="jade")
+    :code(lang="ruby")
+      def genki_ippai(str)
+        puts "#{str}!!!"
+      end
+
+h3#sample-text-math 数式
+p
+  | インラインとブロックの 2 種類があります。
+  a(href="https://www.mathjax.org/") MathJax
+  | を採用しているので
+  code eqnarray
+  | などを含む基本的な TeX の記法が使えます。インラインは
+  :inmath
+    \( x_n \)
+  | のようなスタイルになります。ブロックは
+  :math
+    \[
+      (x_1 \lor x_2) \land (x_1 \lor \lnot x_2)
+    \]
+  | のようなスタイルになります。次のように書きます。
+  :code(lang="jade")
+    :inmath
+      \( x_n \)
+
+    :math
+      \[
+        (x_1 \lor x_2) \land (x_1 \lor \lnot x_2)
+      \]
+
+h3#sample-text-list 箇条書き
+p 数字と点に対応しています。
+ol
+  li ひとつめ
+  li ふたつめ
+  li みっつめ
+ul
+  li ひとつめ
+  li ふたつめ
+  li みっつめ
+:code(lang="jade")
+  ol
+    li ひとつめ
+    li ふたつめ
+    li みっつめ
+  ul
+    li ひとつめ
+    li ふたつめ
+    li みっつめ
+
+h3#sample-text-frame 枠囲い
+p 文章を枠囲いできます。文字は太字になります。
+.frame
+  p 大事な内容やまとめ等を囲うと良さそうです
+:code(lang="jade")
+  .frame
+    p 大事な内容やまとめ等を囲うと良さそうです
+
+h3#sample-text-footnote 脚注
+p
+  | 脚注
+  span.footnote 本文の下の方につける注記
+  | を挿入できます。
+:code(lang="jade")
+  span.footnote 本文の下の方につける注記
+
+h2#sample-table 表
+p シンプルな表に対応しています。表番号が付きます。出力は以下のとおりです。
+table
+  caption 十干十二支の一覧
+  tr.header
+    th 年
+    th 十干十二支
+    th 読み
+  tr
+    td 2018
+    td 戊戌
+    td つちのえいぬ
+  tr
+    td 2019
+    td 己亥
+    td つちのとい
+  tr
+    td 2020
+    td 庚子
+    td かのえね
+  tr
+    td 2021
+    td 辛丑
+    td かのとうし
+:code(lang="jade")
+  table
+    caption 十干十二支の一覧
+    tr.header
+      th 年
+      th 十干十二支
+      th 読み
+    tr
+      td 2018
+      td 戊戌
+      td つちのえいぬ
+    tr
+      td 2019
+      td 己亥
+      td つちのとい
+    tr
+      td 2020
+      td 庚子
+      td かのえね
+    tr
+      td 2021
+      td 辛丑
+      td かのとうし
+
+h2#sample-figure 図
+p 図には枠線と図番号が付きます。出力は以下のとおりです。
+figure
+  figcaption やましーのアイコン
+  img(src="assets/icons/yamasy1549.png")
+:code(lang="jade")
+  figure
+    figcaption やましーのアイコン
+    img(src="assets/icons/yamasy1549.png")

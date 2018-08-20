@@ -10,7 +10,7 @@ section.chapter-wrapper
     content: " 0" counter(chapter)
 
 h1
-  counter-reset: section
+  counter-reset: section table figure footnote
   counter-increment: chapter
 
 h2
@@ -28,8 +28,43 @@ h3
   counter-increment: subsection
 
   &::before
-    content: counter(section) "." counter(subsection)
+    content: counter(section) "." counter(subsection) "."
     font-size: 12pt
     font-weight: 700
     line-height: 0
     margin-right: 5px
+
+h4
+  counter-increment: subsubsection
+
+  &::before
+    content: counter(section) "." counter(subsection) "." counter(subsubsection) "."
+    font-size: 10pt
+    font-weight: 700
+    line-height: 0
+    margin-right: 5px
+
+table caption
+  counter-increment: table
+
+  &::before
+    content: "表" counter(table) "."
+    margin-right: 5px
+
+figure figcaption
+  counter-increment: figure
+
+  &::before
+    content: "図" counter(figure) "."
+    margin-right: 5px
+
+span.footnote
+  counter-increment: footnote
+
+  &::footnote-call,
+  &::footnote-marker
+    content: "[" counter(footnote) "]"
+
+// 目次
+nav.toc a::after
+  content: target-counter(attr(href), page)
