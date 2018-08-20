@@ -11,6 +11,8 @@ html(lang="ja")
     title TOGETHER
 
   body
+    section.chapter-wrapper(data-category="Preface")
+      include pug/preface/index.pug
     section.chapter-wrapper(data-category="Math")
       include pug/sat_solver/index.pug
       include pug/large_numbers/index.pug
