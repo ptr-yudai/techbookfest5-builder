@@ -52,7 +52,7 @@ gulp.task('assets', () =>
 );
 
 gulp.task('stylus', () =>
-  gulp.src('style/main.styl')
+  gulp.src('src/style/main.styl')
     .pipe($.plumber(plumberOpt))
     .pipe($.sourcemaps.init())
     .pipe($.stylus({
@@ -60,6 +60,9 @@ gulp.task('stylus', () =>
     }))
     .pipe($.sourcemaps.write('.'))
     .pipe(gulp.dest('dest/'))
+    .pipe(browserSync.reload({
+      stream: true,
+    }))
 );
 
 gulp.task('browsersync', () => {
@@ -79,7 +82,7 @@ gulp.task('bs-reload', () => {
 gulp.task('watch', ['default', 'browsersync'], () => {
   gulp.watch('src/**/*.pug', ['pug']);
   gulp.watch('src/assets/**/*', ['assets']);
-  gulp.watch('style/**/*.styl', ['stylus']);
+  gulp.watch('src/style/**/*.styl', ['stylus']);
   gulp.watch('dest/*.css', ['bs-reload']);
   gulp.watch('dest/*.html', ['bs-reload']);
 });
