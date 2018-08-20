@@ -1,0 +1,83 @@
+.header
+  position: relative
+  // 余白打ち消し
+  margin-top: (-1 * ($page-margin-top + $page-bleed))
+  padding-top: ($page-margin-top + $page-bleed)
+  margin-right: (-1 * ($page-margin-right + $page-bleed))
+  padding-right: ($page-margin-right + $page-bleed)
+  margin-left: (-1 * ($page-margin-left + $page-bleed))
+  padding-left: ($page-margin-left + $page-bleed)
+
+  .rectangle
+    position: absolute
+    left: 0
+    top: 0
+    height: ($page-bleed + 1cm)
+    display: flex
+
+    .left
+      background: #000000
+      width: ($page-bleed + 1cm)
+      height: 100%
+    .right
+      background: $main-color
+      width: 10cm
+      height: 100%
+
+  .top-background
+    background: $main-color
+    background-image: url(assets/background.png) 
+    background-size: 0.15cm
+    position: absolute
+    right: 0
+    top: 0
+    width: 65%
+    height: (2cm + $page-bleed)
+    z-index: -1
+
+  .chapter
+    font-family: KiniroSansSerif
+    font-size: 20pt
+    color: $main-color
+    margin-top: 0.5cm
+    line-height: 1
+
+  h1
+    margin: 4pt auto 8px auto
+
+  .authors-wrapper
+    height: 0.8cm
+    margin-bottom: 30px
+
+  .authors
+    margin: 0
+    background: $main-color
+    background-image: url(assets/background.png)
+    background-size: 0.15cm
+    display: flex
+    justify-content: flex-end
+    position: absolute
+    width: ($page-width - $page-margin-right + $page-bleed)
+    height: 0.8cm
+    left: 0
+    list-style: none
+
+  .author
+    display: flex
+    background: #ffffff
+    min-width: 100px
+    color: $main-color
+    margin-left: 20px
+
+    img
+      border: 2px solid $main-color
+      width: 0.8cm
+      border-radius: 0
+
+    .name
+      border: 2px solid $main-color
+      border-left: 0
+      padding: 0 10px
+      font-size: 12pt
+      font-weight: 700
+      line-height: 1.5
