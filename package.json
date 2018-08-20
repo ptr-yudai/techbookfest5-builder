@@ -6,7 +6,7 @@
   "private": true,
   "scripts": {
     "watch": "gulp watch",
-    "save": "savepdf -s A5 dest/index.html",
+    "save": "savepdf -s B5 dest/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "devDependencies": {

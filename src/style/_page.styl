@@ -1,0 +1,51 @@
+base-page-layout($m-top, $m-bottom, $m-outer, $m-inner)
+  margin-top:     $m-top
+  margin-bottom:  $m-bottom
+  margin-right:   '-epubx-expr(page-number % 2 == 0 ? %s : %s)' % ($m-inner $m-outer)
+  margin-left:    '-epubx-expr(page-number % 2 == 0 ? %s : %s)' % ($m-outer $m-inner)
+  width: ($page-width - $m-outer - $m-inner)
+  height: ($page-height - $m-top - $m-bottom)
+  overflow: visible
+
+
+@media screen
+  body
+    margin: auto 2.55in
+    font-size: 10pt
+    overflow-x: hidden
+
+  article
+    clear: both
+
+  .header
+    margin-top: 100px
+
+article
+  page-break-before: always
+  page-break-after: always
+
+h1, h2, h3, h4
+  break-after: avoid
+
+@page
+  size: $page-width $page-height
+  bleed: $page-bleed
+
+@-epubx-page-master
+  @-epubx-partition
+    content: counter(page)
+    width: 8mm
+    height: 8mm
+    font: $nombre-font
+    bottom: 4mm
+    left: (($page-width / 2) - 4mm)
+    text-align: center
+    color: $main-color
+
+  @-epubx-partition chapter
+    -epubx-flow-from: body
+    base-page-layout(
+      $page-margin-top,
+      $page-margin-bottom,
+      $page-margin-left,
+      $page-margin-right)

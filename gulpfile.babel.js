@@ -26,6 +26,18 @@ pug.filters.code = function(str, options, locals) {
        + `</pre>`;
 }
 
+pug.filters.math = function(str, options, locals) {
+  return `<p data-math-typeset="true">`
+       +   str
+       + `</p>`;
+}
+
+pug.filters.inmath = function(str, options, locals) {
+  return `<span data-math-typeset="true">`
+       +   str
+       + `</span>`;
+}
+
 const $ = gulpLoadPlugins();
 const plumberOpt = {
   errorHandler: function(err) {
