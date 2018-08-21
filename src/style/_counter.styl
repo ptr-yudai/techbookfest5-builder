@@ -9,8 +9,11 @@ section.chapter-wrapper
   &::after
     content: " 0" counter(chapter)
 
+article
+  counter-reset: footnote
+
 h1
-  counter-reset: section table figure footnote
+  counter-reset: section table figure
   counter-increment: chapter
 
 h2
