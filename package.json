@@ -6,8 +6,9 @@
   "private": true,
   "scripts": {
     "watch": "gulp watch",
-    "save": "savepdf -s B5 dest/index.html",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "save:sample": "savepdf -s B5 -o output/sample.pdf dest/index.html",
+    "save:1": "savepdf -s B5 -o output/together1.pdf dest/together1.html",
+    "save:2": "savepdf -s B5 -o output/together2.pdf dest/together2.html"
   },
   "devDependencies": {
     "babel-core": "^6.10.4",
