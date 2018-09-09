@@ -64,7 +64,7 @@ gulp.task('assets', () =>
 );
 
 gulp.task('stylus', () =>
-  gulp.src('src/style/main.styl')
+  gulp.src(['src/style/main*.styl'])
     .pipe($.plumber(plumberOpt))
     .pipe($.sourcemaps.init())
     .pipe($.stylus({
