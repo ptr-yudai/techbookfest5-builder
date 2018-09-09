@@ -9,8 +9,10 @@ section.chapter-wrapper
   &::after
     content: " 0" counter(chapter)
 
-h1
+article
   counter-reset: section table figure footnote
+
+h1
   counter-increment: chapter
 
 h2
@@ -60,6 +62,8 @@ figure figcaption
 
 span.footnote
   counter-increment: footnote
+  font-weight: 400
+  text-align: left
 
   &::footnote-call,
   &::footnote-marker

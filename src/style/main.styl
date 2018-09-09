@@ -5,6 +5,7 @@
 @import "_header";
 @import "_counter";
 @import "_figure";
+@import "_together";
 
 *,
 *::before,
@@ -94,6 +95,17 @@ pre
 span.footnote
   float: footnote
 
+.column2
+  display: flex
+  margin-top: 10px
+
+  > *
+    margin-top: 0
+    width: 50%
+
+    > *
+      margin-top: 0
+
 // 表
 table
   display: inline-block
@@ -117,8 +129,6 @@ figure
 
 img
   max-width: 100%
-  border-radius: 2px
-  border: 2px solid
 
 .clearfix:before
   content: " "
