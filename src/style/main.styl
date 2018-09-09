@@ -96,10 +96,15 @@ span.footnote
   float: footnote
 
 .column2
-  column-count: 2;
+  display: flex
+  margin-top: 10px
 
   > *
     margin-top: 0
+    width: 50%
+
+    > *
+      margin-top: 0
 
 // 表
 table
@@ -124,8 +129,6 @@ figure
 
 img
   max-width: 100%
-  border-radius: 2px
-  border: 2px solid
 
 .clearfix:before
   content: " "
