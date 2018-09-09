@@ -8,7 +8,10 @@
     "watch": "gulp watch",
     "save:sample": "savepdf -s B5 -o output/sample.pdf dest/index.html",
     "save:1": "savepdf -s B5 -o output/together1.pdf dest/together1.html",
-    "save:2": "savepdf -s B5 -o output/together2.pdf dest/together2.html"
+    "save:2": "savepdf -s B5 -o output/together2.pdf dest/together2.html",
+    "upload:sample": "ruby pdf_upload.rb output/sample.pdf",
+    "upload:1": "ruby pdf_upload.rb output/together1.pdf",
+    "upload:2": "ruby pdf_upload.rb output/together2.pdf"
   },
   "devDependencies": {
     "babel-core": "^6.10.4",

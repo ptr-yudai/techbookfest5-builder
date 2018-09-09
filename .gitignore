@@ -2,3 +2,6 @@ node_modules
 *.pdf
 src/assets/fonts
 dest
+
+config.json
+token.yaml
