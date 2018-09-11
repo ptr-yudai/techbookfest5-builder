@@ -5,6 +5,7 @@
   "main": "index.js",
   "private": true,
   "scripts": {
+    "build": "gulp",
     "watch": "gulp watch",
     "save:sample": "savepdf -s B5 -o output/sample.pdf dest/index.html",
     "save:1": "savepdf -s B5 -o output/together1.pdf dest/together1.html",
