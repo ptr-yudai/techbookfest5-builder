@@ -1,0 +1,79 @@
+version: 2
+jobs:
+    build:
+        working_directory: ~/techbookfest5-builder
+        docker:
+            - image: yamasy1549/css-typesetting:latest
+
+        steps:
+            - checkout
+
+            #
+            # packages
+            #
+            - restore_cache:
+                keys:
+                    - package-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+                    - package-v1-
+            - run:
+                name: Install packages
+                command: |
+                    yarn install
+            - save_cache:
+                key: package-v1-{{ .Branch }}-{{ checksum "yarn.lock" }}
+                paths:
+                    - node_modules
+
+            #
+            # output
+            #
+            - run: cp -r /fonts ./src/assets/
+            - run: yarn build
+            - run: mkdir output && yarn save:1 -- --no-sandbox && yarn save:2 -- --no-sandbox
+            - persist_to_workspace:
+                root: ~/techbookfest5-builder
+                paths:
+                    - output/
+
+    deploy:
+        working_directory: ~/techbookfest5-builder
+        docker:
+            - image: circleci/ruby:2.5
+        steps:
+            - checkout
+
+            - run:
+                name: Create configure file
+                command: |
+                    touch config.json
+                    echo '{' >> config.json
+                    echo '  "client_id": "'$client_id'",' >> config.json
+                    echo '  "client_secret": "'$client_secret'",' >> config.json
+                    echo '  "scope": ["'$scope'"],' >> config.json
+                    echo '  "refresh_token": "'$refresh_token'"' >> config.json
+                    echo '}' >> config.json
+
+            #
+            # gems
+            #
+            - restore_cache:
+                keys:
+                    - gem-v1-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+                    - gem-v1-
+            - run: bundle install --path=vendor/bundle --jobs=4
+            - save_cache:
+                key: gem-v1-{{ .Branch }}-{{ checksum "Gemfile.lock" }}
+                paths:
+                    - vendor/bundle
+
+            - attach_workspace:
+                at: ~/techbookfest5-builder
+            - run: ruby pdf_upload.rb output/together1.pdf && ruby pdf_upload.rb output/together2.pdf
+workflows:
+    version: 2
+    build_and_deploy:
+        jobs:
+            - build
+            - deploy:
+                requires:
+                    - build
