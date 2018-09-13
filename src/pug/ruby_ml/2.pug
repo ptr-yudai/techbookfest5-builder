@@ -1,0 +1,509 @@
+h2#ruby_ml-doit やっていき
+p
+  | 題材として「言語処理100本ノック 2015
+  span.footnote: a(href="http://www.cl.ecei.tohoku.ac.jp/nlp100/") http://www.cl.ecei.tohoku.ac.jp/nlp100/
+  | 」の「第8章 機械学習」の問題を用います。問題文は省略しているので適宜Webページにアクセスして参照してください。
+p
+  | 言語処理100本ノックは東北大学の乾・岡崎研究室がWeb上に公開している、プログラミングやデータ分析に関する問題集です。形態素解析器 MeCab
+  span.footnote: a(href="https://github.com/taku910/mecab") https://github.com/taku910/mecab
+  |  や係り受け解析器 CaboCha
+  span.footnote: a(href="https://github.com/taku910/cabocha") https://github.com/taku910/cabocha
+  |  を用いた自然言語処理の他にも、データベースを用いた集計、Web アプリケーションの作成、機械学習によるテキストの分類など、実用的なスキルを幅広く習得できるようになっています。
+
+h3#ruby_ml-doit-70 70. データの入手・整形
+p 70〜72は前準備です。
+p
+  | ポジティブデータとネガティブデータから正解データを作ってランダムに並べます。「Ruby できかいがくしゅ〜」というタイトルなのですが、シェルスクリプトで書いたほうが早そうです。
+  :code(lang='ruby')
+    # 70.sh
+
+    export LC_ALL=C
+    sed -e 's/^/+1 /' rt-polaritydata/rt-polarity.pos > sentiment.txt
+    sed -e 's/^/-1 /' rt-polaritydata/rt-polarity.neg >> sentiment.txt
+    sort -R sentiment.txt -o sentiment.txt
+
+    grep -c ^+ sentiment.txt
+    grep -c ^- sentiment.txt
+p 正例と負例はどちらも 5331 個ずつになりました。
+.newpage
+
+h3#ruby_ml-doit-71 71. ストップワード
+p
+  | ストップワードリストには Alir3z4/stop-words
+  span.footnote: a(href="https://raw.githubusercontent.com/Alir3z4/stop-words/master/english.txt") https://raw.githubusercontent.com/Alir3z4/stop-words/master/english.txt
+  |  を使うことにします。まず、このストップワードリストに対象文字列が含まれているか判定する関数を作ります。
+  :code(lang='ruby')
+    # util.rb
+    STOPWORDS = File.open('stop-words.txt') { |file| file.read.split("\n") }
+
+    class String
+      def stopword?(stopwords: STOPWORDS)
+        stopwords.include?(self.downcase)
+      end
+    end
+p
+  | 次にテストを書きます。ここでは Ruby 標準の
+  code Test::Unit
+  | を使いました。
+  :code(lang='ruby')
+    # 71.rb
+
+    require './util'
+    require 'test/unit'
+
+    class TestMethods < Test::Unit::TestCase
+      def test_stopword?
+        assert_equal false, "hoge".stopword?
+        assert_equal true, "Don't".stopword?
+        assert_equal true, "all".stopword?
+      end
+    end
+
+h3#ruby_ml-doit-72 72. 素性抽出
+p
+  | この問題までが前準備です。問題文より、最低限
+  ol
+    li ストップワードを除去
+    li 各単語をステミング
+  | の処理はしておくべきとのことなのでやっていきます。
+  code use_as_feature?
+  | メソッドではストップワードの除去と同時に、アルファベット以外の文字が含まれている単語も除去することにしました。ステミングには aurelian/ruby-stemmer
+  span.footnote: a(href="https://github.com/aurelian/ruby-stemmer") https://github.com/aurelian/ruby-stemmer
+  |  を使いました。
+  :code(lang='ruby')
+    # util.rb
+
+    require 'lingua/stemmer'
+  .newpage
+  :code(lang='ruby')
+    STEMMER = Lingua::Stemmer.new(language: 'en')
+
+    class String
+      #
+      # 素性として有用な単語か判定する
+      #
+      def use_as_feature?
+        !self.stopword? && !self.match?(/[[:^alpha:]]/)
+      end
+
+      #
+      # （文章レベルで）単語の出現回数をとる
+      #
+      def to_word_freqs
+        freqs = {}
+
+        self.split.each do |word|
+          if word.use_as_feature?
+            stemmed_word = STEMMER.stem(word)
+            freqs[stemmed_word] ||= 0
+            freqs[stemmed_word] += 1
+          end
+        end
+
+        freqs
+      end
+    end
+
+    #
+    # （ファイルレベルで）単語の出現回数をとる
+    #
+    def word_freqs(filename: 'sentiment.txt')
+      freqs = []
+
+      File.open(filename) do |file|
+        freqs = file.map do |line|
+          # 不正なバイト列を?で置換、先頭にある+1などのアノテーションを省く
+          line.scrub('?').chomp[3...-1].to_word_freqs
+        end
+      end
+
+      freqs
+    end
+
+    #
+    # 単語の出現回数がat_least回以上のものだけでBoWを構成する
+    #
+    def bag_of_words(at_least: 3)
+      freqs = word_freqs
+      _bow = {}
+
+      freqs.each do |freq|
+        freq.each do |word, count|
+          _bow[word] ||= 0
+          _bow[word] += count
+        end
+      end
+
+      words = _bow.select{ |_, count| count >= at_least }.keys
+      bow = words.product([0]).to_h
+
+      bows = freqs.map do |freq|
+        progressbar.increment
+        freq_bow = bow.clone
+        freq.each do |word, count|
+          freq_bow[word] += count if words.include?(word)
+        end
+        freq_bow.values
+      end
+
+      words, bows
+    end
+p
+  | ストップワードとアルファベット以外の文字が含まれている単語の除去、ステミングの処理を施したデータの特徴をざっくり見てみると、出現単語数（ユニーク）は 11,538 になっていました。BoW は要するに単語数×データ数の2次元配列のことなので、処理速度を考えて単語数はなるべく少なくしておきたいです。ここでは出現回数の少ない単語を切り捨てられないか調査するため、グラフを書いてみます。
+  :code(lang='ruby')
+    # 72_freq.rb
+
+    require './util'
+    require 'pycall/import'
+    include PyCall::Import
+
+    # MacOSX backend is not usable through pycall...
+    pyimport 'matplotlib', as: :mp
+    mp.rcParams[:backend] = 'TkAgg' if mp.rcParams[:backend] == 'MacOSX'
+
+    pyimport 'matplotlib.pyplot', as: 'plt'
+
+    _, bows = bag_of_words(at_least: 0)
+
+    plt.hist(bows.transpose.map(&:sum), range: PyCall::Tuple.([1,10]), bins: 9)
+    plt.show()
+figure
+  img(src="assets/ruby_ml/Figure_1.png")
+  figcaption
+    | 出現回数と単語数の関係
+    span.footnote 横軸が出現回数、縦軸が単語数
+p
+  |  1回しか出現しない単語が 5,000 近くあり、全体の 4 割以上を占めています。どこまで切り捨てるかは人によるのですが、ここでは出現回数が 3 回未満の単語
+  span.footnote 全体の約6割5分を占めています
+  | を切り捨てることにします。
+p
+  | 以上より、素性は以下の処理を行ったものとします。
+  ol
+    li ストップワードを除去
+    li アルファベット以外の文字が含まれている単語を除去
+    li 各単語をステミング
+    li 出現回数が 3 回未満のものは切り捨てる
+  :code(lang='ruby')
+    # 72.rb
+
+    require './util'
+
+    words, bows = bag_of_words
+  .newpage
+  :code(lang='ruby')
+    puts words.join(',')
+    bows.each { |bow| puts bow.join(',') }
+
+h3#ruby_ml-doit-73 73. 学習
+p
+  | ここでは未知のデータから -1 から +1 までの極性値を予測します（回帰）。scikit-learn 先生を使いますが、Python での書き方とほとんど同じように書けてしまいます、特に
+  code model.fit()
+  | あたりはパッと見 Python ですね。
+  :code(lang='ruby')
+    # train.rb
+
+    require 'pycall/import'
+    include PyCall::Import
+
+    pyfrom 'sklearn.model_selection', import: :train_test_split
+    pyfrom 'sklearn.linear_model', import: :LogisticRegression
+    pyfrom 'sklearn.externals', import: :joblib
+
+    def train_test_data(test_size: 0)
+      labels = File.open('sentiment.txt').each_line.map do |line|
+        line[0..1]
+      end
+
+      _, bows = bag_of_words
+      train_test_split(bows, labels, test_size: test_size)
+    end
+
+    def logreg(x_train, y_train)
+      model = LogisticRegression.()
+      model.fit(x_train, y_train)
+    end
+  :code(lang='ruby')
+    # 73.rb
+
+    require './util'
+    require './train'
+
+    x_train, _, y_train, _ = train_test_data
+    model = logreg(x_train, y_train)
+    joblib.dump(model, '73.pkl')
+
+    puts "accuracy(train)\t#{model.score(x_train, y_train)}"
+p ここで学習したモデルは後の問題でも使うため、pickle で保存しておきます。accuracy は 0.90 程度となりました。
+
+h3#ruby_ml-doit-74 74. 予測
+p
+  | 73 で保存した
+  code model
+  | を使って、文章の極性ラベルを予測します。
+  :code(lang='ruby')
+    # 74.rb
+
+    require './util'
+    require './train'
+
+    model = joblib.load('73.pkl')
+
+    sentences = [
+      'It is too bad to pay for nothing .',
+      'It was very good ! I love it .'
+    ]
+
+    freqs = word_freqs(sentences: sentences)
+
+    bows = []
+    bag_of_words do |words, _, bow|
+      bows = freqs.map do |freq|
+        freq_bow = bow.clone
+        freq.each do |word, count|
+          freq_bow[word] += count if words.include?(word)
+        end
+        freq_bow.values
+      end
+    end
+
+    model.predict_proba(bows).tolist.to_a.each.with_index do |probability, i|
+      if probability[0] >= probability[1]
+        puts "[+1]\t#{probability[0]}"
+      else
+        puts "[-1]\t#{probability[1]}"
+      end
+      puts "\t#{sentences[i]}"
+    end
+p
+  code predict_proba()
+  | の返り値が Object になっているので、Enumelable にするため
+  code tolist
+  | で Python の list にしてから
+  code to_a
+  | で Ruby の Array にする必要があります。ややこしいですね。
+p ちなみに、予測確率は 1 つ目の文が 0.92 程度、2 つ目の文が 0.72 程度になりました。まあ良さげでしょうか。
+
+h3#ruby_ml-doit-75 75. 素性の重み
+p
+  | 72 で決定した素性の重み（係数）は sklearn の
+  code LinearRegression.coef_
+  | メソッドで見ることができます。
+  :code(lang='ruby')
+    # 75.rb
+
+    require './util'
+    require './train'
+
+    model = joblib.load('73.pkl')
+    words = bag_of_words { |words, _, _| words }
+    weights = model.coef_.tolist.to_a[0]
+
+    puts 'Top10:'
+    weights.max(10).each.with_index(1) do |weight, i|
+      puts "\t#{i}: #{words[weights.index(weight)]}\t(#{weight})"
+    end
+
+    puts 'Worst10:'
+    weights.min(10).each.with_index(1) do |weight, i|
+      puts "\t#{i}: #{words[weights.index(weight)]}\t(#{weight})"
+    end
+p 結果は以下のようになりました。bore や dull の重みが大きくなっているのでそこそこ正しく学習できている気がします。
+  :code
+    Top10:
+    	1: bore	(2.175997812461488)
+    	2: dull	(2.003755850692782)
+    	3: fail	(1.9257032117415696)
+    	4: wast	(1.9115308822593406)
+    	5: neither	(1.8784845302802262)
+    	6: routin	(1.8478490272694796)
+    	7: mediocr	(1.7616310747443127)
+    	8: suppos	(1.741061050870143)
+    	9: appar	(1.722292496348836)
+    	10: flat	(1.6934546527632508)
+    Worst10:
+    	1: refresh	(-2.3724739688071663)
+    	2: engross	(-2.2781806860637728)
+    	3: unexpect	(-1.9725248128313524)
+    	4: glorious	(-1.902959136899963)
+    	5: examin	(-1.724223430400693)
+    	6: confid	(-1.6828574398543517)
+    	7: lane	(-1.666256374575063)
+    	8: smarter	(-1.664563102866504)
+    	9: resist	(-1.6057473723425169)
+    	10: remark	(-1.5663897349509894)
+
+h3#ruby_ml-doit-76 76. ラベル付け
+p
+  | sklearn の
+  code LinearRegression.predict_proba
+  | メソッドでクラスの分類確率を見ることができます。分類確率の大きい方を採用します。
+  :code(lang='ruby')
+    # 76.rb
+
+    require './util'
+    require './train'
+
+    model = joblib.load('73.pkl')
+    x_train, _, y_train, _ = train_test_data
+
+    [model.predict_proba(x_train).tolist.to_a, y_train].transpose.each do |probability, label|
+      prob_label = (probability[0] >= probability[1]) ? '+1' : '-1'
+      puts "#{label}\t#{prob_label}\t#{probability.max}"
+    end
+
+h3#ruby_ml-doit-77 77. 正解率の計測
+p
+  | 前問 76 の出力から、正答率、適合率、再現率、F1 スコアを求めて予測モデルの性能を測ります。
+  figure
+    table
+      caption スレットスコア
+      tr
+        th
+        th 予測結果がPositive
+        th 予測結果がNegative
+      tr
+        th 実際の結果がPositive
+        td TP(True Positive)
+        td FN(False Negative)
+      tr
+        th 実際の結果がNegative
+        td FP(False Positive)
+        td TN(True Negative)
+  strong 正解率
+  | は予測した全データ数のうち正解した数の割合のことです。
+  strong 適合率
+  | は予測結果がどれくらい正解していたかを表す指標、
+  strong 再現率
+  | は予測結果が実際の正解のうちどれくらいの割合をカバーするかを表す指標です。適合率と再現率はトレードオフの関係にあり、これらの調和平均は
+  strong F1 スコア
+  | と呼ばれます。
+  :math
+    \[
+      正解率 = \frac{TP + TN}{TP + FP + TN + FN} \\
+      適合率 = \frac{TP}{TP + FP} \\
+      再現率 = \frac{TP}{TP + FN} \\
+      F1スコア = \frac{2}{\frac{1}{適合率} + \frac{1}{再現率}} \\
+    \]
+  :code(lang='ruby')
+    # 77.rb
+
+    accuracy_list = []
+    precision_list = []
+    recall_list = []
+
+    File.open('76.txt') do |lines|
+      lines.each do |line|
+        label, prob_label, _ = line.chomp.split("\t")
+        # 予測の正答率
+        accuracy_list << (label == prob_label)
+        # 正例に関する適合率
+        precision_list << (label == '+1') if prob_label == '+1'
+        # 正例に関する再現率
+        recall_list << (prob_label == '+1') if label == '+1'
+      end
+    end
+
+    accuracy = accuracy_list.count(true) / accuracy_list.count.to_f
+    precision = precision_list.count(true) / precision_list.count.to_f
+    recall = recall_list.count(true) / recall_list.count.to_f
+    f1 = (2 * recall * precision) / (recall + precision)
+
+    puts "accuracy\t#{accuracy}"
+    puts "precision\t#{precision}"
+    puts "recall\t#{recall}"
+    puts "f1\t#{f1}"
+
+p
+  | 簡単な素性のわりには良さげな結果が出ています。
+  :code
+    accuracy	0.9039579816169574
+    precision	0.9085562511857332
+    recall	0.898330519602326
+    f1	0.9034144501037541
+
+h3#ruby_ml-doit-78 78. 5分割交差検定
+p
+  | 前問 77 では学習データを評価データとして用いているのでまずいです。この問題では交差検定を行うことで、学習データと評価データにそれぞれ別のデータを用います。
+  :code(lang='ruby')
+    # 78.rb
+
+    require './util'
+    require './train'
+
+    pyfrom 'sklearn.model_selection', import: :KFold
+    pyfrom 'sklearn.linear_model', import: :LogisticRegression
+    pyfrom 'sklearn.metrics', import: %i(accuracy_score precision_score recall_score f1_score)
+
+    bows, _, labels, _ = train_test_data
+
+    n_splits = 5
+    kf = KFold.(n_splits: n_splits, shuffle: true)
+    kf_generator = kf.split(bows)
+
+    scores = n_splits.times.map do
+      train, test = kf_generator.next().to_a
+      train_start, train_endd = train[0].to_i, train[-1].to_i
+      test_start, test_endd = test[0].to_i, test[-1].to_i
+      x_train, y_train = bows[train_start..train_endd], labels[train_start..train_endd]
+      x_test, y_test = bows[test_start..test_endd], labels[test_start..test_endd]
+
+      model = logreg(x_train, y_train)
+      y_pred = model.predict(x_test)
+
+      {
+        accuracy: accuracy_score(y_test, y_pred),
+        precision: precision_score(y_test, y_pred, average: :macro),
+        recall: recall_score(y_test, y_pred, average: :macro),
+        f1: f1_score(y_test, y_pred, average: :macro)
+      }
+    end
+
+    scores.first.keys.each do |key|
+      puts "#{key}\t#{scores.sum{|hash| hash[key] } / scores.count}"
+    end
+  :code
+    accuracy	0.903963790539
+    precision	0.904014812599
+    recall	0.903963589544
+    f1	0.903960723715
+
+h3#ruby_ml-doit-79 79. 適合率-再現率グラフの描画
+p
+  | 77 で、適合率と再現率はトレード・オフの関係にあると述べました。最後にこれをグラフで確認してみましょう。
+  :code(lang='ruby')
+    # 79.rb
+
+    require './util'
+    require './train'
+
+    # MacOSX backend is not usable through pycall...
+    pyimport 'matplotlib', as: :mp
+    pyimport 'numpy', as: :np
+    mp.rcParams[:backend] = 'TkAgg' if mp.rcParams[:backend] == 'MacOSX'
+
+    pyimport 'matplotlib.mlab', as: 'mlab'
+    pyimport 'matplotlib.pyplot', as: 'plt'
+
+    pyfrom 'sklearn.metrics', import: :precision_recall_curve
+
+    x_train, x_test, y_train, y_test = train_test_data(test_size: 0.2)
+    model = logreg(x_train, y_train)
+
+    y_test_class = y_test.map(&:to_i)
+    x_test_pred = model.predict_proba(x_test).tolist.to_a.map { |array| array[0] }
+    precision, recall, threshold = *precision_recall_curve(y_test_class, x_test_pred)
+    threshold = threshold.tolist.to_a
+
+    0.1.step(0.9, 0.1).each do |plot_threshold|
+      t = threshold.find { |t| t >= plot_threshold }
+      i = threshold.index(t)
+      plt.plot(recall[i], precision[i], 'o')
+    end
+
+    plt.step(recall, precision, where: 'post')
+    plt.xlabel('Recall')
+    plt.ylabel('Precision')
+    plt.show()
+figure
+  img(src="assets/ruby_ml/Figure_2.png")
+  figcaption 適合率-再現率グラフ

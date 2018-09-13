@@ -1,0 +1,57 @@
+h2#ruby_ml-why なぜ Ruby で機械学習？
+p 機械学習では、豊富なライブラリと実用に耐えうる処理速度から、一般的に Python が用いられます。しかし、Python にあって他言語にないライブラリを使用したいこともあります。例えば既存のアプリケーション内で機械学習などのデータ処理を行いたい場合、アプリケーションとデータ処理システムがそれぞれ異なる言語で書かれていると、言語を越えてデータをやり取りする必要があるため実装が複雑になってしまいます。Ruby でいえば Ruby on Rails などでアプリケーションを作成することが多いため、Ruby で機械学習をする需要はあると思います。
+p ……というのは真面目な話で、実際には普段書いている言語で機械学習が簡単にできたら{楽しい, 嬉しい, アガる}よね！　というのが筆者の本音です。
+
+h2#ruby_ml-license ライセンス
+p
+  | この記事に載せたソースコードは MIT License
+  span.footnote: a(href="https://osdn.net/projects/opensource/wiki/licenses%2FMIT_license") https://osdn.net/projects/opensource/wiki/licenses%2FMIT_license
+  |  とします。
+p 現在この記事は有料で配布されていますが、将来的に筆者のブログなどで無料公開される可能性があります。
+
+h2#ruby_ml-howto PyCall ことはじめ
+p
+  | PyCall は RubyGems のひとつとして公開されています。PyCall を使い始めるには、次のようにしてモジュールをインポートします。
+  :code(lang='ruby')
+    require 'pycall/import'
+    include PyCall::Import
+  | Python ライブラリのインポートは
+  code pyimport
+  | や
+  code pyfrom
+  | で行います。
+  :code(lang='ruby')
+    # import numpy as np
+    pyimport 'numpy', as: :np
+
+    # from sklearn.linear_model import LogisticRegression
+    pyfrom 'sklearn.linear_model', import: :LogisticRegression
+  | matplotlibをMacOSXで使うときだけ注意が必要です。
+  :code(lang='ruby')
+    pyimport 'matplotlib', as: :mp
+    mp.rcParams[:backend] = 'TkAgg' if mp.rcParams[:backend] == 'MacOSX'
+p
+  | Python の型システムと Ruby の型システムは異なります。そのため、Python ライブラリの返り値をそのまま Ruby で扱えないことがあります。
+  :code(lang='ruby')
+    py_list = PyCall.eval("[1, 2]")
+    py_list.class
+    #=> <type 'list'>
+
+    py_tuple = PyCall.eval("(1, 2)")
+    py_tuple.class
+    #=> <type 'tuple'>
+    py_list.to_a.class
+    #=> Array
+
+    py_tuple.to_a.class
+    #=> Array
+  .newpage
+  :code(lang='ruby')
+    proba = model.predict_proba(x_train)
+    proba.class
+    #=> Object
+
+    proba.tolist.class
+    #=> List
+    proba.tolist.to_a.class
+    #=> Array
