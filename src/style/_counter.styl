@@ -65,7 +65,9 @@ span.footnote
   font-weight: 400
   text-align: left
 
-  &::footnote-call,
+  &::footnote-call
+    content: counter(footnote)
+
   &::footnote-marker
     content: "[" counter(footnote) "]"
 
