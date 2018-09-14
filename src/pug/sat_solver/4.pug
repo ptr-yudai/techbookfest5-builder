@@ -1,0 +1,95 @@
+h2#s4 SATソルバの実装
+p ここではRustでSATソルバを実装します. 上のDPLLアルゴリズムに対応するコードのみここに記載し, コードの全容はGitHubへのリンクを貼っておきます.
+p 以下がDPLLアルゴリズムに対応するコードです.
+:code(lang="rust")
+  type Literal = isize;
+  type Clause = Vec<Literal>;
+  type Cnf = Vec<Clause>;
+  type Assignment = Vec<Literal>;
+
+  #[derive(Debug, PartialEq, Clone)]
+  pub struct Dpll {
+    cnf: Cnf,
+    pub ass: Assignment,
+  }
+
+  impl Dpll {
+    pub fn new(cnf: Cnf) -> Dpll {
+      Dpll {
+        cnf: cnf,
+        ass: Vec::new(),
+      }
+    }
+
+  pub fn solver(self) -> Option<Self> {
+    let dpll = self.unit_propagation();
+
+    if dpll.is_empty() {
+      return Some(dpll);
+    }
+    if dpll.exists_empty_clause() {
+      return None;
+    }
+
+    let heuristic_lit = dpll.heuristic_select();
+    if let Some(dpll_r) = dpll.assign(heuristic_lit).solver() {
+      return Some(dpll_r);
+    }
+    if let Some(dpll_r) = dpll.assign(-heuristic_lit).solver() {
+      return Some(dpll_r);
+    }
+
+    None
+    }
+  }
+
+  impl Dpll {
+    fn unit_propagation(self) -> Self {
+      if let Some(lit) = self.get_unit_literal() {
+        return self.assign(lit).unit_propagation();
+      }
+      self
+    }
+    
+    fn assign(&self, lit: Literal) -> Self {
+      let mut dpll = self.clone();
+        dpll.ass.push(lit);
+        let c = dpll
+          .cnf
+          .into_iter()
+          .filter(|cl| !cl.iter().any(|l| *l == lit))
+          .map(|cl| retain_lit(cl, -lit))
+          .collect();
+        dpll.cnf = c;
+        dpll
+        }
+    }
+    
+    fn retain_lit(mut cl: Clause, lit: Literal) -> Clause {
+      cl.retain(|&l| l != lit);
+      cl
+    }
+
+  impl Dpll {
+    fn exists_empty_clause(&self) -> bool {
+      self.cnf.iter().any(|cl| cl.is_empty())
+    }
+
+    fn get_unit_literal(&self) -> Option<Literal> {
+      if let Some(a) = self.cnf.iter().filter(|&cl| cl.len() == 1).next() {
+        return Some(a[0]);
+      }
+      None
+    }
+    
+    fn heuristic_select(&self) -> Literal {
+      self.cnf[0][0]
+    }
+
+    fn is_empty(&self) -> bool {
+      self.cnf.is_empty()
+    }
+  }
+| コードの全容は次のリンク先から見られます.
+p.center https://github.com/shinkwhek/SATsolver/tree/v1.1
+p 応用の話はまたいつか。

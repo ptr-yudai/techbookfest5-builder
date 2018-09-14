@@ -1,0 +1,43 @@
+h2#s1 SATソルバとはなにか
+p ここではSATソルバとは何かについて説明していきます.
+p SATソルバ(Boolean satisfiability solver)を一言で言うならば「命題論理式の充足可能性判定を行うアルゴリズム, 及びその実装」のことです. 命題論理式を入力に受け取り, 充足可能である場合は充足するような真偽値割当てを出力し, 充足不可能な場合は充足不可能である旨を出力します. (詳しい話は 3. SATソルバの理論 で説明していきます.このセクションではきもちを書いていきます)
+p
+  | 次のような論理式があったとします.
+  :math
+    \[
+    	\left( x_{1}\lor x_{2}\right)\land\left( x_{1}\lor\lnot x_{2}\right)\land\left( x_{3}\lor x_{4}\right)\land\left(\lnot x_{3}\lor\lnot x_{4}\right)\land\left( x_{1}\lor\lnot x_{3}\right)\land\left(\lnot x_{2}\lor\lnot x_{4}\right)
+    \]
+  | この論理式のリテラル:
+  :inmath
+    \(x_{1},x_{2},x_{3},x_{4}\)
+  | に次のような割当てを行うことでこの論理式は真になります.
+  :math
+    \[
+      \left( x_{1},x_{2},x_{3},x_{4}\right) =\left( T,T,T,F\right) または\left( T,F,F,T\right) ,\left( T,F,T,F\right)
+    \]
+  | これが実際に真になっているかどうか確認してみます.
+  :inmath
+    \( \left( x_{1},x_{2},x_{3},x_{4}\right) = \left( T,T,T,F\right) \)
+  | とすると,
+  :math
+    \begin{align*}
+    &\left( x_{1}\lor x_{2}\right)\land\left( x_{1}\lor\lnot x_{2}\right)\land\left( x_{3}\lor x_{4}\right)\land\left(\lnot x_{3}\lor\lnot x_{4}\right)\land\left( x_{1}\lor\lnot x_{3}\right)\land\left(\lnot x_{2}\lor\lnot x_{4}\right) \\
+    &=  \left( T\lor T\right)\land\left( T\lor F\right)\land\left( T\lor F\right)\land\left( F\lor T\right)\land\left( T\lor F\right)\land\left( F\lor T\right) \\
+    &= T\land T\land T\land T\land T\land T \\
+    &= T
+    \end{align*}
+  | この割当てによって論理式が真になることが確認できました. (他の割当てでも試してみて下さい！)このように, ある論理式
+  :inmath
+    \(\Omega\)
+  | がある割当てIによって真になるとき, 「論理式は割当てIによって充足する」といいます. 現代では様々な場面で, このように論理式が与えられてそれが充足するような割当てを見つけたいという欲求が出てきます. 
+  p ところでこの割当てはどのように見つければ良いのでしょうか. 例に出したもの程度の規模ならば, 人力も選択肢に入るかもしれません. しかし, 実際に出くわす論理式は大規模なものがほとんどでしょう. こういったときにSATソルバは活躍します.
+
+.frame
+  p
+    | 「SATソルバとはなにか」のまとめ
+    ul
+      li 論理式が与えられたとき, それが真になるような割当てを知りたい場面が多々ある
+      li SATソルバは, 論理式が充足可能かどうかを判定し, 充足可能な場合は割当てを見つけてくれる
+
+h3 各章のあらまし
+p 「2 SATソルバの利用」では, オープンソースのSATソルバ "MiniSat" の利用方法を説明します. 「3 SATソルバの理論」では, SATソルバの最も基本的なアルゴリズムの説明をします. 「4 SATソルバの実装」では, 3章で説明した理論を使って実際にSATソルバを実装します. 「Reference」では, これを書くにあたって参照した文書や, おすすめする文書を紹介します.

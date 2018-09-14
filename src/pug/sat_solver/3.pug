@@ -1,0 +1,258 @@
+h2#s3 SATソルバの理論
+p ここではSATソルバのアルゴリズムの解説や, 前セクションで"きもち"にしていた部分の補完をしていきます. まずはSATソルバのアルゴリズムに触れていくための準備をしていきます.
+h3 割当てに関する準備
+p
+  ul
+    li
+      | bool変数:
+      :inmath
+        \( 1,0,\left( T,F\right) \)
+      | をとるような命題変数.
+    li
+      :inmath
+        \(\textbf{V}\)
+      | : bool変数全体の集合.
+    li
+      | 論理式
+      :inmath
+        \(\Omega\)
+      | : bool変数,
+      :inmath
+        \(\lnot ,\lor ,\land\)
+      | を再帰的に適応して作ったもの.
+    li
+      | 割当て
+      :inmath
+        \(\textrm{I}: \textbf{V}\to\left\{ 1,0\right\} \)
+      | .
+    li
+      | 充足する:
+      :inmath
+        \(\textrm{I}\)
+      | によって
+      :inmath
+        \(\Omega\)
+      | が1に割り当てられること.
+      :inmath
+        \(\textrm{I}\models\Omega\)
+      | とかく.
+      p 否定: 
+        :inmath
+          \(\textrm{I}\not\models\Omega\)
+    li
+      | 充足可能:
+      :inmath
+        \(\exists\textrm{I}\left( \textrm{I}\models\Omega\right)\)
+    li
+      | 充足不可能:
+      :inmath
+        \(\forall\textrm{I}\left(\textrm{I}\not\models\Omega\right)\)
+      | .
+    li
+      | 充足同値な変換: 元の論理式
+      :inmath
+        \(A\)
+      | と変換後
+      :inmath
+        \(A^{\prime}\)
+      | があったとき, 
+      :inmath
+        \(A\)
+      | が充足可能 
+      :inmath
+        \(\Leftrightarrow A^{\prime}\)
+      | が充足可能.
+p
+  | ここで任意の論理式
+  :inmath
+    \(\Psi\)
+  | が与えられたとき, 次に従って再帰的に割当てを行う.
+  ul
+    li
+      :inmath
+        \(\forall x\in\Sigma ,\textrm{I}\models x\Leftrightarrow\textrm{I}\left( x\right) =1\)
+      | .
+    li
+      :inmath
+        \(\textrm{I}\models\lnot\Psi\Leftrightarrow\textrm{I}\not\models\Psi\)
+    li
+      :inmath
+        \(\textrm{I}\models\left( \Psi_{1}\land\Psi_{2}\right)\Leftrightarrow\left(\textrm{I}\models\Psi_{1}\right)\lor\left(\textrm{I}\models\Psi_{2}\right)\)
+      | .
+    li
+      :inmath
+        \(\textrm{I}\models\left(\Psi_{1}\land\Psi_{2}\right)\Leftrightarrow\left(\textrm{I}\models\Psi_{1}\right)\land\left(\textrm{I}\models\Psi_{2}\right)\)
+h3 論理式に関する準備
+ul
+  li
+    | リテラル(Literal):
+    :inmath
+      \(x,\lnot x\)
+    | (このとき
+    :inmath
+      \(x\)
+    | はbool).
+  li
+    | 選言節(Clause): リテラルを選言
+    :inmath
+      \(\lor\)
+    | で結合して構成された論理式.
+    p length: 節を構成するリテラルの数.
+    p 特に, length=0の節を
+    strong 空節
+    | といい, length=1の節を
+    strong 単位節
+    | という.
+    p 以降, 単に節ということにする.
+  li
+    | 連言標準形(CNF): 節を連言
+    :inmath
+      \(\land\)
+    | で結合して構成された論理式
+h3 Tseitin変換
+p 準備を終える前にもう一つ補足をしておきます. SATソルバでは(後述するアルゴリズムの都合上)基本的にCNFを扱います. しかし, 対象となるような論理式が必ずしもCNFとなっているとは限りません. ここでは任意の論理式をCNFに変換する方法を説明します.
+p Tseitin変換とは, G. S. Tseitin(1968)によって導入された"命題論理式を論理的に同値なCNFに変換する方法"です. 語弊覚悟で言ってしまうと, 新しい命題変数を追加して論理式を変形していくことでCNFに変換していきます. では, 詳細を説明します.
+p 以下のような論理式があったとします.
+:math
+  \[
+    \left( x_{1}\land x_{2}\right)\lor\left( y_{1}, y_{2}\right)
+  \]
+| これをCNFに変換していきます. まずは連語節(連語によって構成された節)
+:inmath
+  \(x_{1}\land x_{2}\)
+| と同値になるような命題変数aと, それらが同値であることを示す論理式を追加します. 
+:inmath
+  \(y_{1}\land y_{2}\)
+| に対しても同じ操作をします.
+:math
+  \[
+    \left( a\lor b\right)\land\left( a\Leftrightarrow x_{1}\land x_{2}\right)\land\left( b\Leftrightarrow y_{1}\land y_{2}\right)
+  \]
+| 実際これは充足同値な変換となっています. では確認してみます.  元の論理式を充足する割当てを
+:inmath
+  \(f\)
+| とします. そして, 次のように定義した割当て
+:inmath
+  \(f^{\prime}\)
+| は操作後の論理式を充足します.
+p
+  :inmath
+    \(n\in \textit{N}\)
+  | とし,
+  :math
+    \[
+      \begin{align*}
+        f^{\prime}\left( x_{n}\right) &= f\left( x_{n}\right) \\
+        f^{\prime}\left( y_{n}\right) &= f\left( y_{n}\right) \\
+        f^{\prime}\left( a\right) &= f\left( x_{1}\land x_{2}\right) \\
+        f^{\prime}\left( b\right) &= f\left( y_{1}\land y_{2}\right)
+      \end{align*}
+    \]
+  | また, この
+  :inmath
+    \(f^{\prime}\)
+  | が操作後の論理式を充足するとすると,
+  :inmath
+    \(f^{\prime}\)
+  | は元の論理式を充足する割当て
+  :inmath
+    \(f\)
+  | を含む. れで元の論理式と操作後の論理式が充足同値であることが確かめられました.
+  p さて, 変換後の論理式
+  :inmath
+    \(\left( a\lor b\right)\land\left( a\Leftrightarrow x_{1}\land x_{2}\right)\land\left( b\Leftrightarrow y_{1}\land y_{2}\right)\)
+  | ですが,
+  :inmath
+    \(A\Leftarrow B\)
+  | は
+  :inmath
+    \(\lnot A\lor B\)
+  | であることからさらに次のように変換できます.
+  :math
+    \[
+      \left( a\lor b\right)\land\left(\lnot a\lor x_{1}\right)\land\left(\lnot a\lor x_{2}\right)\land\left( a\lor\lnot x_{1}\lor\lnot x_{2}\right)\land\left( \lnot b\lor y_{1}\right)\land\left(\lnot b\lor y_{2}\right)\land\left( b\lor\lnot y_{1}\lor\lnot y_{2}\right)
+    \]
+  | このような手順を踏むことで論理式をCNFに変換することができます. これをTseitin 変換といいます. 一般の場合も同様です.
+  p
+    | まとめると,
+    ul
+      li 連語節と同値になるような論理変数と, 同値であることを表す論理式を追加する.
+      li
+        :inmath
+          \(A\Leftarrow B\)
+        | は
+        :inmath
+          \(\lnot A\Leftarrow B\) 
+        | であることを用いて変形する.
+h3 Davis-Putnam-Logemann-Loveland アルゴリズム
+p さて, これで準備が整いました. これよりSATソルバのアルゴリズムの解説をしていきます. 
+p 次に示すのがDPLLアルゴリズムです. (記述にはRustっぽい仮想言語を用いています)
+code and, or
+|はそれぞれ連言と選言とする.
+:code(lang="rust")
+  fn dpll(cnf : Cnf) -> bool {
+    c = unit_propagation(cnf);
+    if ( c is empty ) {
+      return true;
+    }
+    if ( 空節 exists in c ) {
+      return false;
+    }
+    未割当てのリテラルから, ヒューリスティックで p を選択;
+    return dpll(c and p) or dpll(c and p);
+  }
+
+  // 単位伝播
+  fn unit_propagation(cnf: Cnf) -> Cnf {
+    if (cnfに単位節があれば {a} を１つ選ぶ) {
+      cnf から a を含む節を除く;
+      cnf から ¬a を除く(節を除くわけではない);
+      return unit_propagation(cnf);
+    } else {
+      return cnf;
+    }
+  }
+
+p ざっくり説明すると,
+  ol
+    li 単位節が存在すれば、
+      p
+        ol
+          li その単位節の中の変数と同じものを含む節をすべて除く
+          li その単位節の中の変数との否定の関係にある変数を除く(節を除くわけではない)
+    li すべての節がなくなればtrue
+    li 空節が存在すればfalse
+    li ヒューリスティックに変数を選ぶ
+    li その変数が純粋な場合と否定の場合で分岐させ、それぞれ元の論理式に繋げる
+    li 再帰的にdpllを適用
+| となります.
+
+p では, 実際に適応してみて動きを確認してみます. 基本的に上のアルゴリズムを辿るだけですが, ポイントは単位伝播した際の単位節を覚えておくことです. これによって充足可能な割当てがわかります。
+p 次のような論理式があったとします. (これまでの例に用いたものと同じです)
+:math
+  \[
+    c=\left( x_{1}\lor x_{2}\right)\land\left( x_{1}\lor\lnot x_{2}\right)\land\left( x_{3}\lor x_{4}\right)\land\left(\lnot x_{3}\lor\lnot x_{4}\right)\land\left( x_{1}\lor\lnot x_{3}\right)\land\left(\lnot x_{2}\lor\lnot x_{4}\right)
+  \]
+| これを引数としてdpllを適用します. まずは単位伝播ですが, 単位節がないので無視です. 次にヒューリスティックに命題変数を選びます. ここではテキトウに
+:inmath
+  \(x_{1}\)
+| とします. 次のように再帰的にdpllを適用します.
+:math
+  \[
+    \textrm{dpll}\left( c\land x_{1}\right)\lor\textrm{dpll}\left( c\land\lnot x_{1}\right)
+  \]
+| 右側を先に進めてみると, 単位伝播の際に空節が生まれることが確認できます. なので右側の値はfalseになります. 次に左側を進めていきます. 上のアルゴリズムに従って単位伝番を進めると, 単位伝播あとのCnfとして以下のようなものが得られます.
+:math
+  \[
+    c^{\prime} = \left( x_{3}\lor x_{4}\right)\land\left(\lnot x_{3}\lor\lnot x_{4}\right)\land\left(\lnot x_{2}\lor\lnot x_{4}\right)
+  \]
+| あとはこの作業を繰り返していき, 最後にtrueを返せば充足可能, falseを返せば充足不可能です. そして, trueになるルートでの単位伝播を記録しておくと, それがそのまま充足可能になる割当てとなります. 例えば今回の場合, 
+:math
+  \[
+    \left( x_{1},x_{2},x_{3},x_{4}\right) =\left( T,_,T,F\right) ,\left( T,F,F,T\right)
+  \]
+| となります. 1つ目の
+:inmath
+  \(x_{2}\)
+| はT, Fどちらでも良いという意味です. これは1章であげた割当てと一致します. これがSATソルバの最も基本となるアルゴリズムです. 実際に手を動かして紙に書いてみると理解しやすいと思います.
+
